@@ -3,6 +3,6 @@ package main
 import "awesomeProject/rabbitmq"
 
 func main() {
-	mq := rabbitmq.SimpleMoudle("Test")
-	mq.SimpleConsumer()
+	mq := rabbitmq.SubMoudle("Test2")
+	mq.SubConsumer()
 }

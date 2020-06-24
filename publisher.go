@@ -7,9 +7,9 @@ import (
 )
 
 func main() {
-	mq := rabbitmq.SimpleMoudle("Test")
+	mq := rabbitmq.SubMoudle("Test")
 	for i := 0; i < 100; i++ {
-		mq.SimplePublisher("message: " + strconv.Itoa(i))
+		mq.SubPublisher("message: " + strconv.Itoa(i))
 	}
 
 	log.Println("Publish success")
