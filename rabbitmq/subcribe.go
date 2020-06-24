@@ -5,22 +5,22 @@ import (
 	"log"
 )
 
-func SimpleMoudle(queue string) *RMQ {
-	return NewRabbitmq(queue, "", "")
+func SubMoudle(exchange string) *RMQ {
+	return NewRabbitmq("", exchange, "")
 }
-
-func (r *RMQ) SimplePublisher(message string) {
-	_, err := r.channel.QueueDeclare(
-		r.QueueName,
-		false,
+func (r *RMQ) SubPublisher(message string) {
+	err := r.channel.ExchangeDeclarePassive(
+		r.ExchangeName,
+		"fanout",
+		true,
 		false,
 		false,
 		false,
 		nil)
-	r.failed(err, "队列申请失败")
+	r.failed(err, "交换机创建失败")
 	err = r.channel.Publish(
 		r.ExchangeName,
-		r.QueueName,
+		"",
 		false,
 		false,
 		amqp.Publishing{
@@ -28,18 +28,34 @@ func (r *RMQ) SimplePublisher(message string) {
 			Body:        []byte(message)})
 	r.failed(err, "信息发布失败")
 }
-func (r *RMQ) SimpleConsumer() {
-	_, err := r.channel.QueueDeclare(
-		r.QueueName,
-		false,
+func (r *RMQ) SubConsumer() {
+	err := r.channel.ExchangeDeclarePassive(
+		r.ExchangeName,
+		"fanout",
+		true,
 		false,
 		false,
 		false,
 		nil)
+	r.failed(err, "交换机创建失败")
+	q, err := r.channel.QueueDeclare(
+		"",
+		false,
+		false,
+		true,
+		false,
+		nil)
 	r.failed(err, "队列申请失败")
+	err = r.channel.QueueBind(
+		q.Name,
+		"",
+		r.ExchangeName,
+		false,
+		nil)
+	r.failed(err, "队列绑定失败")
 	megs, err := r.channel.Consume(
-		r.QueueName,
-		"test",
+		q.Name,
+		"",
 		true,
 		false,
 		false,
@@ -55,4 +71,5 @@ func (r *RMQ) SimpleConsumer() {
 	}()
 	log.Println("Waiting Info!......")
 	<-do
+
 }
